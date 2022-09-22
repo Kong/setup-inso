@@ -24,6 +24,23 @@ async function action() {
     const extractMethod =
       compression === "tar.xz" ? "extractTar" : "extractZip";
 
+    let = core.getInput("compression");
+    const compressionFlags = {
+      gzip: "xz",
+      bzip: "x",
+    };
+
+    if (compression === "tar.xz") {
+      // Guess the compression mode based on version
+      if (fullVersion[0] == "2" && !compressionMode) {
+        console.log(`v2 detected, setting gzip compression`);
+        compressionMode = "gzip";
+      } else if (fullVersion[0] == "3" && !compressionMode) {
+        console.log(`v3 detected, setting bzip compression`);
+        compressionMode = "bzip";
+      }
+    }
+
     // Edge case handling for inso 2.4.0 on Linux
     let additionalOptions;
     if (fullVersion === "2.4.0-linux") {
@@ -31,6 +48,14 @@ async function action() {
       // The archive is bzip compressed, not gzip so we need x rather than xz
       // We'd usually use xf but the -f flag is added by GH Actions
       additionalOptions = "x";
+    }
+
+    // If there's an explicit compression mode, use that
+    if (compressionFlags[compressionMode]) {
+      console.log(
+        `${compressionMode} compression enabled - using flags [${compressionFlags[compressionMode]}]`
+      );
+      additionalOptions = compressionFlags[compressionMode];
     }
 
     const insoExtractedFolder = await tc[extractMethod](

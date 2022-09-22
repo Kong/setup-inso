@@ -7,7 +7,7 @@ Add the following to your `steps` definition:
 ```yaml
 - uses: kong/setup-inso@v1
   with:
-    inso-version: 2.4.0 
+    inso-version: 3.5.0
 ```
 
 ## Sample workflow
@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: kong/setup-inso@v1
         with:
-          inso-version: 2.4.0
+          inso-version: 3.5.0
       - run: inso --version
 ```
 
@@ -35,7 +35,7 @@ If you need to capture the output for use in a later step, you can add a wrapper
 steps:
   - uses: kong/setup-inso@v1
     with:
-      inso-version: 2.4.0
+      inso-version: 3.5.0
       wrapper: true
   - run: inso --version
     id: inso_version
@@ -47,6 +47,18 @@ This would produce the following output:
 ```json
 {
   "stderr": "",
-  "stdout": "2.4.0\n"
+  "stdout": "3.5.0\n"
 }
+```
+
+## Controlling the compression format
+
+By default, the 3.x series of `inso` uses `bzip` and this is auto-detected. If for any reason extraction fails, you may change the `compression` type by setting the following:
+
+```yaml
+steps:
+  - uses: kong/setup-inso@v1
+    with:
+      inso-version: 3.5.0
+      compression: gzip
 ```
