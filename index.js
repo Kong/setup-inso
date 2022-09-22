@@ -24,7 +24,7 @@ async function action() {
     const extractMethod =
       compression === "tar.xz" ? "extractTar" : "extractZip";
 
-    let = core.getInput("compression");
+    let compressionMode = core.getInput("compression");
     const compressionFlags = {
       gzip: "xz",
       bzip: "x",
