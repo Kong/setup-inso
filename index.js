@@ -18,7 +18,9 @@ async function action() {
 
   let insoDirectory = tc.find("inso", fullVersion);
   if (!insoDirectory) {
-    const versionUrl = `https://github.com/Kong/insomnia/releases/download/lib%40${semverVersion}/inso-${os}-${semverVersion}.${compression}`;
+    const isHigherThan9Point3 = semver.major(version) < 2000 && semver.compare(version, '9.3.0') >= 0
+    const prefix = isHigherThan9Point3 ? "core" : "lib";
+    const versionUrl = `https://github.com/Kong/insomnia/releases/download/${prefix}%40${semverVersion}/inso-${os}-${semverVersion}.${compression}`;
     const insoPath = await tc.downloadTool(versionUrl);
 
     const extractMethod =
