@@ -1,14 +1,14 @@
 name: Setup inso
 description: Install inso from Kong
 runs:
-  using: node12
+  using: node20
   main: dist/index.js
 inputs:
   inso-version:
     description: The version of inso to install
     required: true
   compression:
-    description: "The compression algorithm to use. One of: [gzip, bzip]"
+    description: 'The compression algorithm to use. One of: [gzip, bzip]'
     required: false
   wrapper:
     description: >-
