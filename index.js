@@ -21,6 +21,7 @@ async function action() {
     const isHigherThan9Point3 = semver.major(version) < 2000 && semver.compare(version, '9.3.0') >= 0
     const prefix = isHigherThan9Point3 ? "core" : "lib";
     const versionUrl = `https://github.com/Kong/insomnia/releases/download/${prefix}%40${semverVersion}/inso-${os}-${semverVersion}.${compression}`;
+    console.log('url:', versionUrl);
     const insoPath = await tc.downloadTool(versionUrl);
 
     const extractMethod =
