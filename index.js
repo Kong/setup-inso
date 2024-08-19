@@ -5,7 +5,7 @@ const createWrapper = require("actions-output-wrapper");
 
 async function action() {
   const version = core.getInput("inso-version", { required: true });
-  const semverVersion = semver.valid(semver.coerce(version));
+  const semverVersion = semver.valid(semver.parse(version));
 
   if (!semverVersion) {
     throw new Error(`Invalid version provided: '${version}'`);
