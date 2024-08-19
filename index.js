@@ -31,6 +31,7 @@ async function action() {
     const compressionFlags = {
       gzip: "xz",
       bzip: "x",
+      xz: "xJ",
     };
 
     if (compression === "tar.xz") {
