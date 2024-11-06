@@ -42,6 +42,10 @@ async function action() {
       } else if (fullVersion[0] == "3" && !compressionMode) {
         console.log(`v3 detected, setting bzip compression`);
         compressionMode = "bzip";
+      } else if (semver.valid(semverVersion) && semver.gt(semverVersion, '4.0.0')) {
+        // https://github.com/Kong/insomnia/pull/4192
+        console.log(`4.0.0+ and linux detected, setting xz compression`);
+        compressionMode = "xz";
       }
     }
 
