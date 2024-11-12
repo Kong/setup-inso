@@ -7,7 +7,7 @@ Add the following to your `steps` definition:
 ```yaml
 - uses: kong/setup-inso@v1
   with:
-    inso-version: 3.5.0
+    inso-version: 10.1.1
 ```
 
 ## Sample workflow
@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: kong/setup-inso@v1
         with:
-          inso-version: 3.5.0
+          inso-version: 10.1.1
       - run: inso --version
 ```
 
@@ -35,7 +35,7 @@ If you need to capture the output for use in a later step, you can add a wrapper
 steps:
   - uses: kong/setup-inso@v1
     with:
-      inso-version: 3.5.0
+      inso-version: 10.1.1
       wrapper: true
   - run: inso --version
     id: inso_version
@@ -47,7 +47,7 @@ This would produce the following output:
 ```json
 {
   "stderr": "",
-  "stdout": "3.5.0\n"
+  "stdout": "10.1.1\n"
 }
 ```
 
