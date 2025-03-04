@@ -29,11 +29,9 @@ describe("version parsing", () => {
   });
 
   const cases = [
-    ["1.7.0", "1.7.0"],
-    ["1.7", "1.7.0"],
-    ["1.6", "1.6.0"],
-    ["1.6.4", "1.6.4"],
-    ["1.8.0-beta2", "1.8.0"],
+    ["1.7.0", "linux-x64-1.7.0"],
+    ["1.6.4", "linux-x64-1.6.4"],
+    ["1.8.0-beta2", "linux-x64-1.8.0-beta2"],
   ];
 
   test.each(cases)(
@@ -42,24 +40,24 @@ describe("version parsing", () => {
       process.env["INPUT_INSO-VERSION"] = version;
 
       setPlatform("linux");
+      setArch("x64");
       mockToolIsInCache(true);
       mockExtraction();
 
       await action();
-      expect(console.log).toBeCalledWith(
-        `Installing inso version ${expected}-linux`
-      );
+      expect(console.log).toBeCalledWith(`Installing inso version ${expected}`);
     }
   );
 });
 
 describe("install", () => {
   it("does not download if the file is in the cache", async () => {
-    process.env["INPUT_INSO-VERSION"] = "1.7.0";
+    process.env["INPUT_INSO-VERSION"] = "10.3.1";
     jest.spyOn(core, "addPath");
     jest.spyOn(tc, "downloadTool");
 
     setPlatform("linux");
+    setArch("x64");
     mockToolIsInCache(true);
     mockExtraction();
 
@@ -69,72 +67,64 @@ describe("install", () => {
     expect(core.addPath).toBeCalledWith("/path/to/inso");
   });
 
-  it("downloads if it is not in the cache", async () => {
-    process.env["INPUT_INSO-VERSION"] = "1.7.0";
-
-    setPlatform("linux");
-    mockToolIsInCache(false);
-    mockTcDownload();
-    mockExtraction("tar.xz");
-
-    await action();
-
-    const versionUrl = `https://github.com/Kong/insomnia/releases/download/lib%401.7.0/inso-linux-1.7.0.tar.xz`;
-
-    expect(tc.downloadTool).toBeCalledWith(versionUrl);
-    expect(tc.extractTar).toBeCalledWith(
-      "./inso-downloaded",
-      "inso-1.7.0-linux",
-      undefined
-    );
-    expect(core.addPath).toBeCalledWith("/path/to/extracted/inso");
-  });
-
-  it("handles the linux 2.4.0 edge case as expected", async () => {
-    process.env["INPUT_INSO-VERSION"] = "2.4.0";
-
-    setPlatform("linux");
-    mockToolIsInCache(false);
-    mockTcDownload();
-    mockExtraction("tar.xz");
-
-    await action();
-
-    const versionUrl = `https://github.com/Kong/insomnia/releases/download/lib%402.4.0/inso-linux-2.4.0.tar.xz`;
-
-    expect(tc.downloadTool).toBeCalledWith(versionUrl);
-    expect(tc.extractTar).toBeCalledWith(
-      "./inso-downloaded",
-      "inso-2.4.0-linux",
-      "x"
-    );
-    expect(core.addPath).toBeCalledWith("/path/to/extracted/inso");
-  });
-
   const osCases = [
-    ["linux", "linux", "tar.xz"],
-    ["win32", "windows", "zip"],
-    ["darwin", "macos", "zip"],
+    ["inso-linux-x64-10.3.1", "tar.xz", "linux", "extractTar", "x"],
+    ["inso-macos-10.3.1", "zip", "darwin", "extractZip", null],
   ];
 
   test.each(osCases)(
-    "downloads correctly for %s",
-    async (platform, os, compression) => {
-      process.env["INPUT_INSO-VERSION"] = "1.7";
+    "downloads if it is not in the cache (%s)",
+    async (name, format, platform, method, flags) => {
+      process.env["INPUT_INSO-VERSION"] = "10.3.1";
 
       setPlatform(platform);
+      setArch("x64");
       mockToolIsInCache(false);
       mockTcDownload();
-      mockExtraction(compression);
+      mockExtraction(format);
 
       await action();
 
-      expect(tc.downloadTool).toBeCalledWith(
-        `https://github.com/Kong/insomnia/releases/download/lib%401.7.0/inso-${os}-1.7.0.${compression}`
+      const versionUrl = `https://github.com/Kong/insomnia/releases/download/core%4010.3.1/${name}.${format}`;
+
+      expect(tc.downloadTool).toBeCalledWith(versionUrl);
+      expect(tc[method]).toBeCalledWith(
+        "./inso-downloaded",
+        `${name}.${format}`,
+        flags
       );
+      expect(core.addPath).toBeCalledWith("/path/to/extracted/inso");
     }
   );
 });
+
+const osCases = [
+  ["linux", "x64", "linux-x64", "tar.xz"],
+  ["linux", "arm64", "linux-arm64", "tar.xz"],
+  ["win32", null, "windows", "zip"],
+  ["darwin", null, "macos", "zip"],
+];
+
+test.each(osCases)(
+  "downloads correctly for %s",
+  async (platform, arch, os, compression) => {
+    process.env["INPUT_INSO-VERSION"] = "10.3.1";
+
+    setPlatform(platform);
+    if (arch) {
+      setArch(arch);
+    }
+    mockToolIsInCache(false);
+    mockTcDownload();
+    mockExtraction(compression);
+
+    await action();
+
+    expect(tc.downloadTool).toBeCalledWith(
+      `https://github.com/Kong/insomnia/releases/download/core%4010.3.1/inso-${os}-10.3.1.${compression}`
+    );
+  }
+);
 
 describe("wrapper", () => {
   it("does not apply the wrapper by default", async () => {
@@ -172,6 +162,12 @@ function mockToolIsInCache(exists) {
 function setPlatform(platform) {
   Object.defineProperty(process, "platform", {
     value: platform,
+  });
+}
+
+function setArch(arch) {
+  Object.defineProperty(process, "arch", {
+    value: arch,
   });
 }
 

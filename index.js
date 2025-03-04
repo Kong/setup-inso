@@ -4,7 +4,8 @@ const semver = require("semver");
 const createWrapper = require("actions-output-wrapper");
 
 async function action() {
-  const version = core.getInput("inso-version", { required: true });
+  let version = core.getInput("inso-version", { required: true });
+
   const semverVersion = semver.valid(semver.parse(version));
 
   if (!semverVersion) {
@@ -12,63 +13,31 @@ async function action() {
   }
 
   let os = getPlatform(process.platform);
+  let arch = getArch();
   let compression = getCompression(process.platform);
-  const fullVersion = `${semverVersion}-${os}`;
+
+  if (os == "linux") {
+    os = os + "-" + arch;
+  }
+
+  const fullVersion = `${os}-${semverVersion}`;
   console.log(`Installing inso version ${fullVersion}`);
 
   let insoDirectory = tc.find("inso", fullVersion);
   if (!insoDirectory) {
-    const isHigherThan9Point3 = semver.major(version) < 2000 && semver.compare(version, '9.3.0') >= 0
-    const prefix = isHigherThan9Point3 ? "core" : "lib";
-    const versionUrl = `https://github.com/Kong/insomnia/releases/download/${prefix}%40${semverVersion}/inso-${os}-${semverVersion}.${compression}`;
-    console.log('url:', versionUrl);
+    if (os == "linux") {
+      os = os + "-" + arch;
+    }
+    const versionUrl = `https://github.com/Kong/insomnia/releases/download/core%40${semverVersion}/inso-${fullVersion}.${compression}`;
     const insoPath = await tc.downloadTool(versionUrl);
 
     const extractMethod =
       compression === "tar.xz" ? "extractTar" : "extractZip";
-
-    let compressionMode = core.getInput("compression");
-    const compressionFlags = {
-      gzip: "xz",
-      bzip: "x",
-      xz: "xJ",
-    };
-
-    if (compression === "tar.xz") {
-      // Guess the compression mode based on version
-      if (fullVersion[0] == "2" && !compressionMode) {
-        console.log(`v2 detected, setting gzip compression`);
-        compressionMode = "gzip";
-      } else if (fullVersion[0] == "3" && !compressionMode) {
-        console.log(`v3 detected, setting bzip compression`);
-        compressionMode = "bzip";
-      } else if (semver.valid(semverVersion) && semver.gt(semverVersion, '4.0.0')) {
-        // https://github.com/Kong/insomnia/pull/4192
-        console.log(`4.0.0+ and linux detected, setting xz compression`);
-        compressionMode = "xz";
-      }
-    }
-
-    // Edge case handling for inso 2.4.0 on Linux
-    let additionalOptions;
-    if (fullVersion === "2.4.0-linux") {
-      console.log(`${fullVersion} detected - switching to bzip compression`);
-      // The archive is bzip compressed, not gzip so we need x rather than xz
-      // We'd usually use xf but the -f flag is added by GH Actions
-      additionalOptions = "x";
-    }
-
-    // If there's an explicit compression mode, use that
-    if (compressionFlags[compressionMode]) {
-      console.log(
-        `${compressionMode} compression enabled - using flags [${compressionFlags[compressionMode]}]`
-      );
-      additionalOptions = compressionFlags[compressionMode];
-    }
+    let additionalOptions = extractMethod == "extractTar" ? "x" : null;
 
     const insoExtractedFolder = await tc[extractMethod](
       insoPath,
-      `inso-${fullVersion}`,
+      `inso-${fullVersion}.${compression}`,
       additionalOptions
     );
 
@@ -105,6 +74,10 @@ function getPlatform(platform) {
   }
 
   return "linux";
+}
+
+function getArch() {
+  return process.arch;
 }
 
 if (require.main === module) {
