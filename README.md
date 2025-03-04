@@ -1,13 +1,15 @@
 # setup-inso
 
+> If you are using a version of inso before 10.3.1, please use `kong/setup-inso@v1`
+
 Install [inso](https://github.com/Kong/insomnia/tree/develop/packages/insomnia-inso) so that it can be used in your GitHub Actions workflows
 
 Add the following to your `steps` definition:
 
 ```yaml
-- uses: kong/setup-inso@v1
+- uses: kong/setup-inso@v2
   with:
-    inso-version: 10.1.1
+    inso-version: 10.3.1
 ```
 
 ## Sample workflow
@@ -21,9 +23,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: kong/setup-inso@v1
+      - uses: kong/setup-inso@v2
         with:
-          inso-version: 10.1.1
+          inso-version: 10.3.1
       - run: inso --version
 ```
 
@@ -33,9 +35,9 @@ If you need to capture the output for use in a later step, you can add a wrapper
 
 ```yaml
 steps:
-  - uses: kong/setup-inso@v1
+  - uses: kong/setup-inso@v2
     with:
-      inso-version: 10.1.1
+      inso-version: 10.3.1
       wrapper: true
   - run: inso --version
     id: inso_version
@@ -47,18 +49,6 @@ This would produce the following output:
 ```json
 {
   "stderr": "",
-  "stdout": "10.1.1\n"
+  "stdout": "10.3.1\n"
 }
-```
-
-## Controlling the compression format
-
-By default, the 3.x series of `inso` uses `bzip` and this is auto-detected. If for any reason extraction fails, you may change the `compression` type by setting the following:
-
-```yaml
-steps:
-  - uses: kong/setup-inso@v1
-    with:
-      inso-version: 3.5.0
-      compression: gzip
 ```
