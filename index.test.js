@@ -68,14 +68,15 @@ describe("install", () => {
   });
 
   const osCases = [
-    ["inso-linux-x64-10.3.1", "tar.xz", "linux", "extractTar", "x"],
-    ["inso-macos-10.3.1", "zip", "darwin", "extractZip", null],
+    ["10.3.1", "inso-linux-x64-10.3.1", "tar.xz", "linux", "extractTar", "x"],
+    ["10.3.1", "inso-macos-10.3.1", "zip", "darwin", "extractZip", null],
+    ["11.0.0", "inso-linux-11.0.0", "tar.xz", "linux", "extractTar", "x"],
   ];
 
   test.each(osCases)(
     "downloads if it is not in the cache (%s)",
-    async (name, format, platform, method, flags) => {
-      process.env["INPUT_INSO-VERSION"] = "10.3.1";
+    async (version, name, format, platform, method, flags) => {
+      process.env["INPUT_INSO-VERSION"] = version;
 
       setPlatform(platform);
       setArch("x64");
@@ -85,7 +86,7 @@ describe("install", () => {
 
       await action();
 
-      const versionUrl = `https://github.com/Kong/insomnia/releases/download/core%4010.3.1/${name}.${format}`;
+      const versionUrl = `https://github.com/Kong/insomnia/releases/download/core%40${version}/${name}.${format}`;
 
       expect(tc.downloadTool).toBeCalledWith(versionUrl);
       expect(tc[method]).toBeCalledWith(
