@@ -16,8 +16,11 @@ async function action() {
   let arch = getArch();
   let compression = getCompression(process.platform);
 
-  if (os == "linux") {
-    os = os + "-" + arch;
+  // Insomnia v11 does not add arch to the package name
+  if (semver.lte(semverVersion, "10.99.99")) {
+    if (os == "linux") {
+      os = os + "-" + arch;
+    }
   }
 
   const fullVersion = `${os}-${semverVersion}`;
@@ -25,9 +28,6 @@ async function action() {
 
   let insoDirectory = tc.find("inso", fullVersion);
   if (!insoDirectory) {
-    if (os == "linux") {
-      os = os + "-" + arch;
-    }
     const versionUrl = `https://github.com/Kong/insomnia/releases/download/core%40${semverVersion}/inso-${fullVersion}.${compression}`;
     const insoPath = await tc.downloadTool(versionUrl);
 
