@@ -8,7 +8,7 @@ inputs:
     description: The version of inso to install
     required: true
   compression:
-    description: "The compression algorithm to use. One of: [gzip, bzip]"
+    description: 'The compression algorithm to use. One of: [gzip, bzip]'
     required: false
   wrapper:
     description: >-
